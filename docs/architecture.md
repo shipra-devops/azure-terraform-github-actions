@@ -70,12 +70,6 @@ flowchart LR
 * Azure RBAC
 * No long-lived Azure client secret
 
-### Remote State
-
-Terraform state is stored remotely in **Azure Blob Storage**, providing a shared state location for CI/CD workflows.
-
----
-
 ## Azure Resources
 
 Current infrastructure:
