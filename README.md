@@ -1,169 +1,130 @@
-# Azure Terraform GitHub Actions – Infrastructure CI/CD
+# Azure Infrastructure CI/CD
 
-## 📌 Project Overview
+### Terraform · GitHub Actions · Microsoft Azure · OIDC
 
-This project demonstrates a modern Infrastructure as Code (IaC) and CI/CD workflow for deploying Azure infrastructure using **Terraform and GitHub Actions**.
-
-The project follows a real-world development workflow:
-
-**Feature Branch → Pull Request → Terraform CI → Merge to Main → Terraform CD → Azure**
-
-The infrastructure is intentionally small so that the focus remains on understanding the complete DevOps workflow rather than building a large application.
+> **Production-style Infrastructure as Code and CI/CD implementation demonstrating automated Azure provisioning through GitHub Actions.**
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 flowchart LR
-    A[Developer] --> B[Feature Branch]
+    A[👩‍💻 Developer] --> B[Feature Branch]
     B --> C[Pull Request]
-    C --> D[GitHub Actions - Terraform CI]
 
-    D --> D1[Terraform Format]
-    D1 --> D2[Terraform Init]
-    D2 --> D3[Terraform Validate]
-    D3 --> D4[Terraform Plan]
+    C --> D[⚙️ Terraform CI]
+    D --> D1[Format]
+    D1 --> D2[Init]
+    D2 --> D3[Validate]
+    D3 --> D4[Plan]
 
-    D4 --> E{PR Approved & Merged}
+    D4 --> E[Code Review]
+    E --> F[main]
 
-    E --> F[main Branch]
-    F --> G[GitHub Actions - Terraform CD]
+    F --> G[🚀 Terraform CD]
+    G --> H[🔐 OIDC]
+    H --> I[Terraform Plan]
+    I --> J[Terraform Apply]
 
-    G --> G1[Azure OIDC Login]
-    G1 --> G2[Terraform Init]
-    G2 --> G3[Terraform Validate]
-    G3 --> G4[Terraform Plan]
-    G4 --> G5[Terraform Apply]
+    J --> K[☁️ Azure]
+    K --> L[Resource Group]
+    L --> M[Storage Account]
 
-    G5 --> H[Azure Resource Group]
-    H --> I[Azure Storage Account]
+    style A fill:#24292f,color:#fff
+    style C fill:#24292f,color:#fff
+    style D fill:#0969da,color:#fff
+    style G fill:#0969da,color:#fff
+    style H fill:#8250df,color:#fff
+    style K fill:#0078D4,color:#fff
 ```
 
 ---
 
-## ☁️ Azure Infrastructure
+## Project Overview
 
-Terraform creates the following resources:
+This project demonstrates an end-to-end **Infrastructure as Code (IaC) and CI/CD workflow** for Microsoft Azure.
 
-```text
-Azure Subscription
-│
-└── Resource Group
-    │
-    └── Storage Account
-```
-
-### Resources
-
-| Resource              | Purpose                                    |
-| --------------------- | ------------------------------------------ |
-| Azure Resource Group  | Logical container for Azure resources      |
-| Azure Storage Account | Demonstrates Terraform resource deployment |
-
-The infrastructure is intentionally lightweight and can be expanded later with:
-
-* Azure Virtual Network
-* Subnets
-* App Service
-* Key Vault
-* Azure SQL
-* Application Gateway
-* Load Balancer
-* Private Endpoints
-* Monitoring
-
----
-
-# 🔄 CI/CD Workflow
-
-## 1. Feature Branch
-
-Infrastructure changes are developed in a feature branch.
-
-Example:
+The implementation follows a controlled engineering workflow:
 
 ```text
-feature/terraform-infrastructure
-```
-
-or
-
-```text
-feature/terraform-cd
-```
-
-This keeps changes isolated from the production/main branch.
-
----
-
-## 2. Pull Request
-
-The feature branch is pushed to GitHub and a Pull Request is created against:
-
-```text
-main
-```
-
-The Pull Request automatically triggers the Terraform CI workflow.
-
----
-
-## 3. Terraform CI
-
-The CI workflow performs validation before code can be merged.
-
-```text
+Feature Branch
+      ↓
 Pull Request
-     │
-     ▼
+      ↓
 Terraform CI
-     │
-     ├── Terraform Format Check
-     ├── Terraform Init
-     ├── Terraform Validate
-     └── Terraform Plan
+      ↓
+Code Review
+      ↓
+Merge to main
+      ↓
+Terraform CD
+      ↓
+Azure
 ```
 
-This helps catch Terraform syntax, formatting, configuration and infrastructure planning issues before merging.
+Terraform defines the infrastructure, while GitHub Actions automates validation, planning and deployment.
 
 ---
 
-# 🚀 Continuous Deployment
+## Key Capabilities
 
-After the Pull Request is approved and merged into `main`, the Terraform CD workflow starts automatically.
+| Area              | Implementation             |
+| ----------------- | -------------------------- |
+| ☁️ Cloud          | Microsoft Azure            |
+| 🏗️ IaC           | Terraform                  |
+| 🔄 CI/CD          | GitHub Actions             |
+| 🔐 Authentication | GitHub OIDC                |
+| 🛡️ Authorization | Azure RBAC                 |
+| 🔑 Identity       | Microsoft Entra ID         |
+| 🌿 Git Workflow   | Feature Branch → PR → main |
+| 📦 State          | Azure Blob Storage         |
+
+---
+
+## CI Pipeline
+
+Every Pull Request targeting `main` executes:
+
+```text
+Terraform Format
+       ↓
+Terraform Init
+       ↓
+Terraform Validate
+       ↓
+Terraform Plan
+```
+
+This provides automated infrastructure validation before changes are merged.
+
+---
+
+## CD Pipeline
+
+A successful merge to `main` triggers deployment:
 
 ```text
 main
- │
- ▼
-Terraform CD
- │
- ├── Azure Login
- │
- ├── Terraform Init
- │
- ├── Terraform Validate
- │
- ├── Terraform Plan
- │
- └── Terraform Apply
-          │
-          ▼
-        Azure
+ ↓
+Azure OIDC Authentication
+ ↓
+Terraform Init
+ ↓
+Terraform Validate
+ ↓
+Terraform Plan
+ ↓
+Terraform Apply
+ ↓
+Azure Infrastructure
 ```
-
-Terraform then creates or updates the infrastructure defined in the Terraform configuration.
 
 ---
 
-# 🔐 Authentication – Azure OIDC
+## Security
 
-This project uses **OpenID Connect (OIDC)** between GitHub Actions and Microsoft Azure.
-
-The workflow does not require an Azure client secret for authentication.
-
-GitHub Actions obtains an OIDC token and Azure validates the token through a configured federated credential.
+Authentication between GitHub Actions and Azure uses **OpenID Connect (OIDC)** with federated credentials.
 
 ```text
 GitHub Actions
@@ -172,24 +133,37 @@ GitHub Actions
       ▼
 Microsoft Entra ID
       │
-      │ Federated Credential
+      ▼
+Federated Credential
+      │
       ▼
 Azure Service Principal
       │
-      │ Azure RBAC
       ▼
-Azure Subscription
+Azure RBAC
 ```
 
-The GitHub Actions identity is assigned the required Azure RBAC permissions.
-
-For this project, the service principal has the **Contributor** role at the subscription scope.
-
-This allows Terraform to create and manage the required Azure infrastructure.
+This avoids storing a long-lived Azure client secret in the GitHub Actions workflow.
 
 ---
 
-# 📁 Project Structure
+## Azure Infrastructure
+
+The current deployment intentionally uses a lightweight architecture:
+
+```text
+Azure Subscription
+│
+└── rg-azure-devops-portfolio
+       │
+       └── Storage Account
+```
+
+Keeping the infrastructure small makes the project suitable for learning and portfolio demonstration while limiting unnecessary Azure costs.
+
+---
+
+## Repository Structure
 
 ```text
 azure-terraform-github-actions/
@@ -204,12 +178,10 @@ azure-terraform-github-actions/
 │   ├── provider.tf
 │   ├── variables.tf
 │   ├── outputs.tf
-│   ├── versions.tf
-│   └── terraform.tfvars.example
+│   └── versions.tf
 │
 ├── docs/
-│
-├── scripts/
+│   └── architecture.md
 │
 ├── .gitignore
 └── README.md
@@ -217,320 +189,74 @@ azure-terraform-github-actions/
 
 ---
 
-# 🧩 Terraform Files
+## Engineering Practices Demonstrated
 
-### `main.tf`
-
-Defines the Azure infrastructure.
-
-Currently:
-
-* Resource Group
-* Storage Account
-
-### `provider.tf`
-
-Configures the AzureRM Terraform provider.
-
-### `variables.tf`
-
-Defines configurable Terraform variables such as:
-
-* Azure region
-* Resource group name
-* Storage account name
-
-### `outputs.tf`
-
-Displays useful information after deployment, such as:
-
-* Resource Group name
-* Storage Account name
-* Storage Account ID
-
-### `versions.tf`
-
-Defines the Terraform and AzureRM provider version requirements.
-
----
-
-# ⚙️ GitHub Actions Workflows
-
-## Terraform CI
-
-File:
-
-```text
-.github/workflows/terraform-ci.yml
-```
-
-Triggered by:
-
-```yaml
-pull_request:
-  branches:
-    - main
-```
-
-Purpose:
-
-* Validate Terraform changes
-* Run Terraform plan
-* Prevent invalid infrastructure code from being merged
-
----
-
-## Terraform CD
-
-File:
-
-```text
-.github/workflows/terraform-cd.yml
-```
-
-Triggered when changes are pushed to:
-
-```yaml
-main
-```
-
-Purpose:
-
-* Authenticate to Azure
-* Initialize Terraform
-* Validate configuration
-* Generate Terraform plan
-* Apply infrastructure changes
-
----
-
-# 🛡️ Security Practices Demonstrated
-
-This project demonstrates several important DevOps practices:
-
-* Infrastructure as Code with Terraform
-* Git-based version control
-* Feature branch workflow
+* Infrastructure as Code
+* Git-based change management
+* Feature branch development
 * Pull Request review
-* Automated CI validation
-* Automated infrastructure deployment
-* GitHub Actions
-* Azure OIDC authentication
+* Automated Terraform validation
+* Terraform plan and apply
+* GitHub Actions CI/CD
+* OIDC-based Azure authentication
 * Azure RBAC
-* No Azure client secret stored in Terraform code
-* Terraform state excluded from Git
-* `.terraform` directory excluded from Git
+* Remote Terraform state
+* Cloud resource lifecycle management
 
 ---
 
-# 💰 Azure Cost Management
+## Cost & Cleanup
 
-This project creates Azure resources that may incur charges depending on the Azure subscription and resource configuration.
+This project creates Azure resources that may incur charges depending on the subscription and configuration.
 
-**Always check your Azure resources after completing testing.**
-
-For a small portfolio project, resources should be removed when they are no longer required.
-
----
-
-# 🧹 How to Clean Up Azure Resources
-
-## Option 1 – Delete the Resource Group from Azure Portal
-
-For this small portfolio project, the simplest cleanup method is to delete the entire Resource Group.
-
-In Azure Portal:
+When testing is complete, remove the portfolio infrastructure:
 
 ```text
 Azure Portal
-   ↓
+    ↓
 Resource Groups
-   ↓
+    ↓
 rg-azure-devops-portfolio
-   ↓
+    ↓
 Delete Resource Group
 ```
 
-The Resource Group contains the Terraform-created resources.
-
-Deleting the Resource Group removes the resources inside it.
-
-### ⚠️ Important
-
-Before deleting it, make sure there are **no other resources you need** inside:
-
-```text
-rg-azure-devops-portfolio
-```
-
-Then confirm deletion.
+**Important:** The Terraform remote-state resources are kept separately and should not be deleted with the portfolio resource group.
 
 ---
 
-# 🧹 Terraform Destroy
+## Documentation
 
-Normally, Terraform can remove infrastructure using:
+Technical details are available in:
 
-```powershell
-terraform destroy
-```
-
-or:
-
-```powershell
-terraform destroy -auto-approve
-```
-
-However, Terraform needs access to the **same Terraform state** that was used when the infrastructure was created.
-
-For this project, the current GitHub Actions workflow does not yet use a remote Terraform backend.
-
-Therefore, the GitHub-hosted runner does not retain the Terraform state after the workflow finishes.
-
-### For the current version of this project
-
-For cleanup after a GitHub Actions deployment, deleting the Azure Resource Group from the Azure Portal is the simplest approach.
+📐 **[Architecture](docs/architecture.md)**
+🔄 **CI/CD Pipeline**
+🗄️ **Terraform Remote State**
 
 ---
 
-# 🔜 Future Improvement – Remote Terraform State
+## Roadmap
 
-A production-style implementation should use a remote Terraform backend.
+Future improvements:
 
-For example:
-
-```text
-Azure Storage Account
-        │
-        └── Terraform State
-                │
-                ▼
-        GitHub Actions
-                │
-                ▼
-             Terraform
-                │
-                ▼
-              Azure
-```
-
-A remote backend would allow different CI/CD runs to share the same Terraform state safely.
-
-This is an important next step for making the project more production-like.
+* [ ] Remote Terraform state
+* [ ] Terraform modules
+* [ ] Dev / Test / Production environments
+* [ ] Infrastructure security scanning
+* [ ] Deployment approvals
+* [ ] Azure monitoring
+* [ ] Automated infrastructure cleanup
 
 ---
 
-# 🧪 Example Development Workflow
+## Technology Stack
 
-A typical infrastructure change follows this process:
-
-```text
-1. Create feature branch
-        ↓
-2. Modify Terraform
-        ↓
-3. Commit changes
-        ↓
-4. Push feature branch
-        ↓
-5. Create Pull Request
-        ↓
-6. Terraform CI runs
-        ↓
-7. Review CI results
-        ↓
-8. Merge Pull Request
-        ↓
-9. Terraform CD runs
-        ↓
-10. Terraform Apply
-        ↓
-11. Infrastructure updated in Azure
-```
+**Microsoft Azure** · **Terraform** · **GitHub Actions** · **Git** · **Microsoft Entra ID** · **OIDC** · **Azure RBAC** · **YAML**
 
 ---
 
-# 🎯 Skills Demonstrated
+### Portfolio Focus
 
-This project demonstrates practical experience with:
+> **Design → Validate → Review → Deploy → Manage**
 
-**Cloud**
-
-* Microsoft Azure
-* Azure Resource Groups
-* Azure Storage
-
-**Infrastructure as Code**
-
-* Terraform
-* AzureRM provider
-* Terraform variables
-* Terraform outputs
-* Terraform plan/apply
-
-**CI/CD**
-
-* GitHub Actions
-* Pull Requests
-* Continuous Integration
-* Continuous Deployment
-
-**Security**
-
-* Microsoft Entra ID
-* OIDC
-* Federated Credentials
-* Azure RBAC
-
-**Git**
-
-* Feature branches
-* Pull Requests
-* Merge workflow
-* `.gitignore`
-
----
-
-# 📈 Possible Future Enhancements
-
-The project can be extended to demonstrate a more complete Azure infrastructure platform.
-
-Potential additions:
-
-```text
-Azure VNet
-   │
-   ├── Web Subnet
-   ├── Application Subnet
-   └── Private Endpoint Subnet
-          │
-          ├── App Service
-          ├── Key Vault
-          └── Azure SQL
-```
-
-Additional DevOps improvements could include:
-
-* Azure Storage remote Terraform state
-* Terraform plan artifact
-* Manual approval before production deployment
-* Separate Dev/Test/Production environments
-* Terraform modules
-* Environment-specific variables
-* Security scanning
-* Checkov or tfsec
-* Dependabot
-* Azure Monitor
-* Deployment notifications
-
----
-
-# 👩‍💻 Project Purpose
-
-This project was created as a practical Cloud/DevOps portfolio project to demonstrate how infrastructure can be managed using **Infrastructure as Code and automated CI/CD practices**.
-
-The focus is not simply on creating Azure resources, but on demonstrating the complete engineering workflow:
-
-**Code → Review → Validate → Plan → Merge → Deploy → Manage**
-
----
+This project demonstrates how cloud infrastructure can be managed through a controlled, automated DevOps lifecycle rather than manual Azure Portal deployment.
