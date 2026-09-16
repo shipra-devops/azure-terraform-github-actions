@@ -40,6 +40,19 @@ jobs:
         working-directory: ./terraform
         run: terraform validate
 
+      - name: Check storage account variable
+        shell: bash
+        env:
+          STORAGE_NAME: ${{ vars.TF_STORAGE_ACCOUNT_NAME }}
+        run: |
+           if [ -z "$STORAGE_NAME" ]; then
+            echo "ERROR: TF_STORAGE_ACCOUNT_NAME is empty or unavailable"
+            exit 1
+        else
+        echo "TF_STORAGE_ACCOUNT_NAME is available"
+        echo "Length: ${#STORAGE_NAME}"
+        fi
+
       - name: Terraform Plan
         working-directory: ./terraform
         run: terraform plan
