@@ -17,6 +17,7 @@ Terraform provisions Azure infrastructure while GitHub Actions automates validat
 
 ---
 
+
 ## Architecture
 
 ```mermaid
@@ -43,6 +44,42 @@ flowchart LR
 ```
 
 ---
+
+## Diagram 
+
+```mermaid
+flowchart TD
+    dev["Developer"] -->|Push feature branch| gh["GitHub Repository"]
+    
+    subgraph CI["Terraform CI"]
+        direction LR
+        ci_init["Terraform Init"] --> ci_fmt["Terraform Format"] --> ci_val["Terraform Validate"] --> ci_plan["Terraform Plan"]
+    end
+
+    gh --> CI
+    CI -->|PR approved & merged| main["main branch"]
+
+    subgraph CD_BOX["main branch / CD Environment"]
+        subgraph CD["Terraform CD"]
+            direction TB
+            oidc["GitHub OIDC"] --> cd_init["Terraform Init"]
+            cd_init --> cd_plan["Terraform Plan"]
+            cd_plan --> cd_apply["Terraform Apply"]
+        end
+    end
+
+    main --> CD_BOX
+
+    az_id[("Azure Identity")] -->|Azure Authentication| oidc
+    az_sa[("Azure Storage Account")] -->|Azure Blob Remote State| cd_init
+
+    subgraph Azure["Azure Infrastructure"]
+        rg["Resource Group"] --> sa["Storage Account"]
+    end
+
+    CD_BOX --> Azure
+```
+
 
 ## What This Project Demonstrates
 
